@@ -1,0 +1,9 @@
+[server default]
+user=admin
+password=xxxxxxxxxxxxxx
+ssh_user=root
+repl_user=repl_user
+repl_password=repl_password
+remote_workdir=/data/tmp
+ping_interval=30
+ping_type=select

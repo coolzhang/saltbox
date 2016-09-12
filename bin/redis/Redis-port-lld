@@ -1,0 +1,22 @@
+#!/bin/bash
+#Fuction:redis-server low-level discovery
+
+discovery() {
+            port=($(sudo netstat -tpln | awk -F "[ :]+" '/[r]edis-server/ && /0.0.0.0/ {print $5}'))
+            printf '{\n'
+            printf '\t"data":[\n'
+               for key in ${!port[@]}
+                   do
+                       if [[ "${#port[@]}" -gt 1 && "${key}" -ne "$((${#port[@]}-1))" ]];then
+                          printf '\t {\n'
+                          printf "\t\t\t\"{#REDISPORT}\":\"${port[${key}]}\"},\n"
+                     else [[ "${key}" -eq "((${#port[@]}-1))" ]]
+                          printf '\t {\n'
+                          printf "\t\t\t\"{#REDISPORT}\":\"${port[${key}]}\"}\n"
+                       fi
+               done
+                          printf '\t ]\n'
+                          printf '}\n'
+}
+
+discovery

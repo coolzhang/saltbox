@@ -1,0 +1,14 @@
+[server default]
+manager_workdir=/var/log/masterha/test
+manager_log=/var/log/masterha/test/test.log
+master_binlog_dir=/data/mysql3306
+port=3306
+report_script=${salt_fileroots}/bin/mysql/mha/mha-manual-failover-test.sh
+
+[server1]
+hostname=10.0.0.1
+candidate_master=1
+
+[server2]
+hostname=10.0.0.2
+candidate_master=1

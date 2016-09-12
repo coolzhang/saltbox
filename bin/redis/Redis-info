@@ -1,0 +1,67 @@
+#!/bin/bash
+#### capture redis info ####
+
+
+command=/data/soft/redis/redis-cli
+path=/data/redis${1}
+config=${path}/redis${1}.conf
+
+
+sudo touch /data/redis${1}/redis.slowlog.complete
+sudo chown zabbix /data/redis${1}/redis.slowlog.complete
+
+Dtime=$(awk '/Unix/{print $2;exit}' /data/redis${1}/redis.slowlog.complete)
+Unixstamp=$(date "+%s")
+Rtime=$(date "+%Y%m%d-%T")
+
+function func { ${command} -h localhost -p $1 info | awk -F":" '/'"$2"'/{print $2}';}
+
+function slow {
+                sudo echo -e "UnixStamp: ${Uninxstamp}\nRecord Time: ${Rtime}\n" >> \
+                     /data/redis${1}/redis.slowlog.complete
+                sudo ${command} -p $1 slowlog get 1024 &>> /data/redis${1}/redis.slowlog.complete
+                ${command} -p $1 slowlog len | awk '{print $1}'
+                ${command} -p $1 slowlog reset &>/dev/null
+                [[ $((${Unixstamp}-${Dtime:-0})) -gt 86400 ]] && sudo echo " " > /data/redis${1}/redis.slowlog.complete
+              }
+  
+  case $2 in
+  	     "connected_clients")
+                   func ${1} ${2}
+                ;;
+             "blocked_clients")
+                   func ${1} ${2}
+                ;;
+             "instantaneous_ops_per_sec")
+                   func ${1} ${2}
+                ;;
+             "rejected_connections")
+                   func ${1} ${2}
+                ;;
+             "client_longest_output_list")
+                   ${command} -h localhost -p ${1} info | awk -F":" '$1~/^'"$2"'$/{print $2}'
+                ;; 
+             "client_biggest_input_buf")
+                   ${command} -h localhost -p ${1} info | awk -F":" '$1~/^'"$2"'$/{print $2}'
+                ;;
+             "Keyspace")
+                   ${command} -h localhost -p ${1} info | \
+                       awk 'BEGIN{FS="[:=,]"}/Keyspace/{S=1;next};S&&/db/{sum+=$3}END{print sum}'
+                ;;
+             "used_memory")
+                   ${command} -h localhost -p ${1} info | awk -F":" '$1~/^'"$2"'$/{print $2}' 
+                ;;
+             "used_memory_rss")
+                   func ${1} ${2}
+                ;;
+             "mem_fragmentation_ratio")
+                   func ${1} ${2}
+                ;;
+             "maxmemory")
+                   ${command} -p ${1}  CONFIG GET ${2} | awk 'NR==2{print $1}'
+                ;;
+             "slowlog")
+                   slow ${1}
+                ;;
+
+       esac
