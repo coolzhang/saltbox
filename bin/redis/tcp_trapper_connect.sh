@@ -1,5 +1,7 @@
 #!/bin/bash
 ####zabbix system connect trapper####
+# created by cailu
+#
 
 
 file=/etc/zabbix/ret/system_connect
