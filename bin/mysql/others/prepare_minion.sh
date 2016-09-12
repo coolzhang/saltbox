@@ -23,7 +23,7 @@ fi
 fi
 read -p "Salt master server: " salt_master_ip
 
-mysql_connect="mysql -uadmin -padmin@wy.123 -h10.104.19.43 -P4307"
+mysql_connect="mysql -uadmin -pxxxxx -h10.1.1.1 -P3306"
 mysql_table="runaway.${db_type}_port"
 
 port=$(${mysql_connect} -NBe "select port from ${mysql_table} where app_name='${app_name}' and master_ip='${master_ip}'" 2>/dev/null |tr '\n' '_' |sed 's/_$//')
@@ -114,8 +114,8 @@ done
 mysql_init()
 {
 ## mysql port up to 18001
-mids="adv-mysqlmaster-10.104.206.80-18001"
-rootpass=j0F2g21cdBU4RyN2M65tqfgHN
+mids=""
+rootpass=
 master_mid=$(echo ${mids} |awk '{print $1}')
 ssh ${salt_master_ip} "sh ${salt_master_fileroots}/mysql/mysql_init.sh '${mids}' ${rootpass} ${master_mid}"
 }
@@ -123,8 +123,8 @@ ssh ${salt_master_ip} "sh ${salt_master_fileroots}/mysql/mysql_init.sh '${mids}'
 redis_init()
 {
 ## redis port up to 28006
-mids="commentcenter01-redismaster-10.3.104.28-28002 commentcenter02-redismaster-10.3.104.209-28002 commentcenter03-redismaster-10.3.104.145-28002 commentcenter04-redismaster-10.3.104.121-28002"
-redis_memory=28g
+mids=""
+redis_memory=
 master_mid=""
 ## if setup sentinel, must type master vip as follow
 echo ${mids} |grep redisslave >/dev/null
@@ -135,14 +135,14 @@ ssh ${salt_master_ip} "sh ${salt_master_fileroots}/redis/redis_init.sh '${mids}'
 }
 
 # the following variables for zbxapitool, which preparing for monitor.sls 
-group_name=微信电影票前端-评论Redis-2016
-action_name=评论中心-redis
-condition_like=comment
-/home/dba/zbxapitool -g ${group_name} -a ${action_name} -c ${condition_like}
+group_name=
+action_name=
+condition_like=
+/home/dba/zbxapitool -m create -t hostgroup -g ${group_name} -a ${action_name} -c ${condition_like}
 
 # main process
-salt_master_ip=10.104.19.43
-salt_master_fileroots=/data/salt/srv/salt
+salt_master_ip=
+salt_master_fileroots=
 db_type=redis
 #mid_gen
 install_minion
