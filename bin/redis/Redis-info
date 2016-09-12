@@ -1,5 +1,7 @@
 #!/bin/bash
 #### capture redis info ####
+# created by cailu
+#
 
 
 command=/data/soft/redis/redis-cli
