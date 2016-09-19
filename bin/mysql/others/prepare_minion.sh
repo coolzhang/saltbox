@@ -23,7 +23,7 @@ fi
 fi
 read -p "Salt master server: " salt_master_ip
 
-mysql_connect="mysql -uadmin -pxxxxx -h10.1.1.1 -P3306"
+mysql_connect="mysql -uadmin -padmin@wy.123 -h10.104.19.43 -P4307"
 mysql_table="runaway.${db_type}_port"
 
 port=$(${mysql_connect} -NBe "select port from ${mysql_table} where app_name='${app_name}' and master_ip='${master_ip}'" 2>/dev/null |tr '\n' '_' |sed 's/_$//')
@@ -110,27 +110,30 @@ fi
 done
 }
 
+mysql_mid()
+{
+mids="appname-mysqlmaster-10.10.10.1-3306"
+rootpass=xxxxx
+master_mid=$(echo ${mids} |awk '{print $1}')
+}
+
+redis_mid()
+{
+mids="appname-redismaster-10.10.10.2-6379"
+redis_memory=1g
+echo ${mids} | grep redisslave >/dev/null && read -p "Master mid: " master_mid
+## if setup sentinel, must type master vip as follow
+echo ${mids} | grep redismaster >/dev/null && echo ${mids} | grep redisslave >/dev/null && read -p "Master VIP: " master_vip
+}
+
 # Notice: manually define variables, if there are slaves in mids, master *must* be in the first place.
 mysql_init()
 {
-## mysql port up to 18001
-mids=""
-rootpass=
-master_mid=$(echo ${mids} |awk '{print $1}')
 ssh ${salt_master_ip} "sh ${salt_master_fileroots}/mysql/mysql_init.sh '${mids}' ${rootpass} ${master_mid}"
 }
 
 redis_init()
 {
-## redis port up to 28006
-mids=""
-redis_memory=
-master_mid=""
-## if setup sentinel, must type master vip as follow
-echo ${mids} |grep redisslave >/dev/null
-if [ "$?" = "0" ];then
-master_vip=""
-fi
 ssh ${salt_master_ip} "sh ${salt_master_fileroots}/redis/redis_init.sh '${mids}' ${redis_memory} ${master_mid} '${master_vip}'"
 }
 
@@ -138,12 +141,13 @@ ssh ${salt_master_ip} "sh ${salt_master_fileroots}/redis/redis_init.sh '${mids}'
 group_name=
 action_name=
 condition_like=
-/home/dba/zbxapitool -m create -t hostgroup -g ${group_name} -a ${action_name} -c ${condition_like}
+/home/dba/zbxapitool -g ${group_name} -a ${action_name} -c ${condition_like}
 
 # main process
 salt_master_ip=
 salt_master_fileroots=
-db_type=redis
-#mid_gen
+read -p "Enter DB type: " db_type
+
+${db_type}_mid
 install_minion
 ${db_type}_init
