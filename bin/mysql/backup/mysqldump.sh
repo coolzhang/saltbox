@@ -81,7 +81,7 @@ fi
 
 get_dbname()
 {
-dbnames=$(${mysql} -u${USER} -p${SECRET} -S${SOCKET} -B -N -e "show databases" 2>/dev/null |grep -v -E "information_schema|mysql|test|performance_schema")
+dbnames=$(${mysql} -u${USER} -p${SECRET} -S${SOCKET} -B -N -e "show databases" 2>/dev/null |grep -v -E "information_schema|mysql|test|performance_schema|sys")
 DBNAMES=$(echo ${dbnames})
 }
 
