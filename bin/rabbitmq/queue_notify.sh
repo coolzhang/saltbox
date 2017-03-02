@@ -41,17 +41,17 @@ do
 ${rabbitmqcmd} -p ${vhost} list_queues name messages_ready messages_unacknowledged | grep -v 'queues' | while read queue_name msg_ready msg_unack
 do
 if [ "${msg_ready}" -ge "${email_ready}" -a "${msg_ready}" -lt "${email_ready}" ];then
-mail_body="Queue ${queue_name} Ready: ${msg_ready}"
+mail_body="Queue ${vhost}.${queue_name} Ready: ${msg_ready}"
 email_notification
 elif [ "${msg_ready}" -ge "${sms_ready}" ];then
-sms_body="Queue ${queue_name} Ready: ${msg_ready}"
+sms_body="Queue ${vhost}.${queue_name} Ready: ${msg_ready}"
 sms_notification
 fi
 if [ "${msg_unack}" -ge "${email_unack}" -a "${msg_unack}" -lt "${email_unack}" ];then
-mail_body="Queue ${queue_name} Unacked: ${msg_unack}"
+mail_body="Queue ${vhost}.${queue_name} Unacked: ${msg_unack}"
 email_notification
 elif [ "${msg_unack}" -ge "${sms_unack}" ];then
-sms_body="Queue ${queue_name} Unacked: ${msg_unack}"
+sms_body="Queue ${vhost}.${queue_name} Unacked: ${msg_unack}"
 sms_notification
 fi
 done
