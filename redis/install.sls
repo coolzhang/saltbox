@@ -1,8 +1,8 @@
-# redis_version: redis28, redis3x
+# redis_version: 28, 3x
 # cluster_enabled: true, false
-{% set redis_version = "redis28" %}
+{% set redis_version = "" %}
 {% set redis_memory = "" %}
-{% set cluster_enabled = false %}
+{% set cluster_enabled = true %}
 
 redis-binary-pkg:
   file.managed:
@@ -140,6 +140,7 @@ startup-redis{{ port }}:
 {% endif %}    
 {% endfor %}
 
+{% if '3x' in redis_version and cluster_enabled %}
 install-rubygem:
   file.managed:
     - name: /tmp/redis-3.2.2.gem
@@ -148,6 +149,7 @@ install-rubygem:
     - name: yum install -y ruby rubygems; gem install -l /tmp/redis-3.2.2.gem
     - require:
       - file: install-rubygem
+{% endif %}
 
 cleanup:
   cmd.run:
