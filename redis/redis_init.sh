@@ -6,7 +6,7 @@ redis_install()
 {
 sed -i -e "/set redis_memory/ s/\"\"/\"${redis_memory}\"/" -e "/set redis_version/ s/\"\"/\"${redis_version}\"/" /data/salt/srv/salt/redis/install.sls
 salt "${mid}" state.sls redis.install
-sed -i -e "/set redis_memory/ s/\"${redis_memory}\"/\"\"/" -e "/set redis_version/ s/\"\"/\"${redis_version}\"/" /data/salt/srv/salt/redis/install.sls
+sed -i -e "/set redis_memory/ s/\"${redis_memory}\"/\"\"/" -e "/set redis_version/ s/\"${redis_version}\"/\"\"/" /data/salt/srv/salt/redis/install.sls
 }
 
 redis_repl()
@@ -43,10 +43,10 @@ read redis_version
 }
 
 mids=$1
-redis_memory=$2
-master_mid=$3
-master_vip=$4
-redis_version=$5
+redis_version=$2
+redis_memory=$3
+master_mid=$4
+master_vip=$5
 
 for mid in ${mids}
 do
