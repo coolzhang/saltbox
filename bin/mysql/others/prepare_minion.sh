@@ -23,7 +23,7 @@ fi
 fi
 read -p "Salt master server: " salt_master_ip
 
-mysql_connect="mysql -uadmin -padmin@wy.123 -h10.104.19.43 -P4307"
+mysql_connect="mysql -uroot -p12345 -h192.168.0.100 -P3306"
 mysql_table="runaway.${db_type}_port"
 
 port=$(${mysql_connect} -NBe "select port from ${mysql_table} where app_name='${app_name}' and master_ip='${master_ip}'" 2>/dev/null |tr '\n' '_' |sed 's/_$//')
@@ -112,16 +112,18 @@ done
 
 mysql_mid()
 {
-mids="appname-mysqlmaster-10.10.10.1-3306"
-rootpass=xxxxx
+## mysql port up to 18004
+mids="comment-mysqlmaster-192.168.0.1-3306"
+rootpass=123456
 master_mid=$(echo ${mids} |awk '{print $1}')
 }
 
 redis_mid()
 {
-mids="appname-redismaster-10.10.10.2-6379"
-redis_memory=1g
-echo ${mids} | grep redisslave >/dev/null && read -p "Master mid: " master_mid
+## redis port up to 28017
+mids="comment-redismaster-192.168.0.1-6379"
+redis_memory=1gb
+echo ${mids} | grep -v redismaster >/dev/null && read -p "Master mid: " master_mid
 ## if setup sentinel, must type master vip as follow
 echo ${mids} | grep redismaster >/dev/null && echo ${mids} | grep redisslave >/dev/null && read -p "Master VIP: " master_vip
 }
@@ -134,19 +136,22 @@ ssh ${salt_master_ip} "sh ${salt_master_fileroots}/mysql/mysql_init.sh '${mids}'
 
 redis_init()
 {
-ssh ${salt_master_ip} "sh ${salt_master_fileroots}/redis/redis_init.sh '${mids}' ${redis_memory} ${master_mid} '${master_vip}'"
+ssh ${salt_master_ip} "sh ${salt_master_fileroots}/redis/redis_init.sh '${mids}' ${redis_version} ${redis_memory} ${master_mid} '${master_vip}'"
 }
 
 # the following variables for zbxapitool, which preparing for monitor.sls 
-group_name=
-action_name=
-condition_like=
-/home/dba/zbxapitool -g ${group_name} -a ${action_name} -c ${condition_like}
+group_name=评论-mysql
+action_name=评论-mysql
+condition_like=comment-mysql
+/home/dba/zbxapitool -groupName ${group_name} -actionName ${action_name} -actionCondition ${condition_like} -configType hostgroup
 
 # main process
-salt_master_ip=
-salt_master_fileroots=
+salt_master_ip=192.168.0.100
+salt_master_fileroots=/data/salt/srv/salt
 read -p "Enter DB type: " db_type
+if [ "${db_type}" = "redis" ];then
+read -p "Enter Redis Version(eg. redis28, redis3x): " redis_version
+fi
 
 ${db_type}_mid
 install_minion
