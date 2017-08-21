@@ -3,14 +3,13 @@
 #  sub-script: mysqldump.sh
 #
 
-softdir=
-bakdir=
-backup_server=
+softdir=/data/soft
+bakdir=/data/backup
 bakdate=$(date +%Y%m%d)
 cnfdir=${softdir}/dbadmin/conf
 mysql=${softdir}/mysql/bin/mysql
 mysqldump=${softdir}/mysql/bin/mysqldump
-USER=admin
+USER=backup
 
 command_check()
 {
@@ -50,9 +49,9 @@ if [ -e ${localdir}/${bakdate}.sql ];then
     if [ $? -eq "0" ];then
       ## remote backup dumpfile & logfile
       cd ${bakdir}
-      rsync -az -R ${dbdir}/mysqldump/${bakdate}.tar.gz mysql@${backup_server}::backup
-      rsync -az -R ${dbdir}/mysqldump/mysqldump_${bakdate}.log mysql@${backup_server}::backup
-      rsync -az -R ${dbdir}/binlog/${bakdate}/mysqldump_slave_info mysql@${backup_server}::backup
+      rsync -az -R ${dbdir}/mysqldump/${bakdate}.tar.gz mysql@10.1.1.45::backup
+      rsync -az -R ${dbdir}/mysqldump/mysqldump_${bakdate}.log mysql@10.1.1.45::backup
+      rsync -az -R ${dbdir}/binlog/${bakdate}/mysqldump_slave_info mysql@10.1.1.45::backup
       rm -f ${localdir}/${bakdate}.sql;rm -f ${localdir}/my*.cnf
     fi
   else
@@ -60,7 +59,7 @@ if [ -e ${localdir}/${bakdate}.sql ];then
   fi
 else
   cd ${bakdir}
-  rsync -az -R ${dbdir}/mysqldump/mysqldump_${bakdate}.log mysql@${backup_server}::backup
+  rsync -az -R ${dbdir}/mysqldump/mysqldump_${bakdate}.log mysql@10.1.1.45::backup
 fi
 }
 

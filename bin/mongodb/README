@@ -1,0 +1,3 @@
+# mikoomi-mongodb-plugin.php & mikoomi-mongodb-plugin.sh
+##
+## The above two scrpits are deployed on zabbix server. They are in the direcotry which is set by the ExternalScripts option in zabbix_server.conf.

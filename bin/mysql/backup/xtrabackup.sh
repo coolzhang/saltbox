@@ -4,14 +4,13 @@
 #
 
 source /root/.bash_profile
-softdir=
-bakdir=
-backup_server=
+softdir=/data/soft
+bakdir=/data/backup
 bakdate=$(date +%Y%m%d)
 cnfdir=${softdir}/dbadmin/conf
 mysql=${softdir}/mysql/bin/mysql
 xtrabackup=${softdir}/mysql/bin/innobackupex
-USER=admin
+USER=backup
 
 command_check()
 {
@@ -57,9 +56,9 @@ if [ $? -eq "0" ];then
   tar -czf ${bakdate}.tar.gz ${bakdate} && rm -fr ${bakdate}
   ## remote backup dumpfile & logfile
   cd ${bakdir}
-  rsync -az -R ${dbdir}/xtrabackup/full/${bakdate}.tar.gz mysql@${backup_server}::backup
-  rsync -az -R ${dbdir}/xtrabackup/full/xtrabackup_${bakdate}.log mysql@${backup_server}::backup
-  rsync -az -R ${dbdir}/binlog/${bakdate}/xtrabackup_slave_info mysql@${backup_server}::backup
+  rsync -az -R ${dbdir}/xtrabackup/full/${bakdate}.tar.gz mysql@10.1.1.45::backup
+  rsync -az -R ${dbdir}/xtrabackup/full/xtrabackup_${bakdate}.log mysql@10.1.1.45::backup
+  rsync -az -R ${dbdir}/binlog/${bakdate}/xtrabackup_slave_info mysql@10.1.1.45::backup
 else
   return 1
 fi

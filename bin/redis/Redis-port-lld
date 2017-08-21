@@ -1,7 +1,6 @@
 #!/bin/bash
 #Fuction:redis-server low-level discovery
-# created by cailu
-#
+# by Cailu
 
 discovery() {
             port=($(sudo netstat -tpln | awk -F "[ :]+" '/[r]edis-server/ && /0.0.0.0/ {print $5}' | grep -vE '^17|^18'))

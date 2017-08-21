@@ -1,9 +1,7 @@
-{% set dbadir = "path for dba scripts" %}
-
 {% for file in [ 'anemometer_collect.sh' ] %}
 cp-{{ file }}:
   file.managed:
-    - name: {{ dbadir }}/script/{{ file }}
+    - name: /data/soft/dbadmin/script/{{ file }}
     - source: salt://bin/mysql/profile/{{ file }}
     - mode: 755
 {% endfor %}
@@ -20,4 +18,4 @@ set-crontab:
     - text: |
 
         # mysql slowlog collection
-        0 7 * * * {{ dbadir }}/script/anemometer_collect.sh
+        0 7 * * * /data/soft/dbadmin/script/anemometer_collect.sh

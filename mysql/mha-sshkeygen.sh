@@ -1,0 +1,1 @@
+/data/salt/srv/salt/bin/mysql/mha/mha-sshkeygen.sh

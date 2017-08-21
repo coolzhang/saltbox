@@ -1,10 +1,8 @@
 #!/bin/bash
 #
 #
-
 source /root/.bash_profile
 rabbitmqcmd=$(which rabbitmqctl)
-mymail=/usr/bin/sendEmail
 vhosts=$(${rabbitmqcmd} list_vhosts | grep -iv "Listing vhosts")
 email_ready=3000
 email_unack=3000
@@ -13,12 +11,13 @@ sms_unack=6000
 
 email_notification()
 {
+mymail=/usr/bin/sendEmail
 mail_from="monitor@cmug.org"
-mail_to="zhanghai@cmug.org"
-mail_cc="dba@cmug.org"
+mail_to="lafeng@cmug.org"
+mail_cc="lafeng@cmug.org"
 mail_srv="smtp.exmail.qq.com:25"
 mail_user="monitor@cmug.org"
-mail_pass="xxxxx"
+mail_pass="opencmug"
 mail_subject="MQ Warning"
 ip=$(/sbin/ifconfig eth0 | awk '/inet addr:/ {print $2}' | awk -F':' '{print $2}')
 mail_prefix="[RabbitMQ@${ip}]"
@@ -31,8 +30,8 @@ sms_notification()
 ip=$(/sbin/ifconfig eth0 | awk '/inet addr:/ {print $2}' | awk -F':' '{print $2}')
 sms_prefix="[RabbitMQ@${ip}]"
 sms_content="${sms_prefix} ${sms_body}"
-phones="131abcd0056"
-curl -d "phone_numbers=${phones}&content=${sms_content}&msg_kind=notice&client_id=sa_alert" http://sms.cmug.org/sms/api/send >/dev/null 2>&1
+phones="131xxxx0056"
+/usr/bin/curl -d "phone_numbers=${phones}&content=${sms_content}&msg_kind=notice&client_id=sa_alert" http://sms.china.cmug.org/sms/api/send >/dev/null 2>&1
 }
 
 
@@ -60,7 +59,7 @@ done
 hosts=$(${rabbitmqcmd} cluster_status | grep running_nodes | awk -F'[,@]' '{print $3" "$5" "$7}' | sed -e 's/]}//')
 for host in ${hosts}
 do
-ip=$(getent hosts ${host} | awk '{print $1}' | grep -v "127.0.0.1")
+ip=$(/usr/bin/getent hosts ${host} | awk '{print $1}' | grep -v "127.0.0.1")
 nc -z ${ip} 5672 | grep succeeded >/dev/null
 if [ "$?" != "0" ];then
 sms_body="${host}@${ip} is not okay"

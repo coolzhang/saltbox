@@ -1,7 +1,6 @@
 {% set node = "mha4mysql-node-0.56-0.el6.noarch.rpm" %}
 {% set keyfiles = ['authorized_keys','id_rsa'] %}
-{% set appname = "your application name, e.g: the first field of mid" %}
-{% set basedir = "mysql software path" %}
+{% set appname = "comment" %}
 
 {% for keyfile in keyfiles  %}
 cp-{{ keyfile }}:
@@ -44,7 +43,7 @@ install-node:
 
 ln-mysqlcommand:
   cmd.run:
-    - name: \cp -a {{ basedir }}/bin/mysql /usr/local/bin/; \cp -a {{ basedir }}/bin/mysqlbinlog /usr/local/bin/
+    - name: \cp -a /data/soft/mysql/bin/mysql /usr/local/bin/; \cp -a /data/soft/mysql/bin/mysqlbinlog /usr/local/bin/
 
 cleanup:
   cmd.run:

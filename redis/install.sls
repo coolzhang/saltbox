@@ -92,9 +92,6 @@ redis-conf{{ port }}:
     - context:
         port: {{ port }}
         maxmemory: {{ redis_memory }}
-      {% if 'mb' not in redis_memory and redis_memory|replace("gb","")|int >= 10 %}
-        client_output_buffer_limit: client-output-buffer-limit slave 0 0 0
-      {% endif %}
       {% if '3x' in redis_version and cluster_enabled %}
         dir: dir /data/rediscluster/{{ port }}
         cluster_enabled: cluster-enabled yes

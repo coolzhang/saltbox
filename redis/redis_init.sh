@@ -11,9 +11,9 @@ sed -i -e "/set redis_memory/ s/\"${redis_memory}\"/\"\"/" -e "/set redis_versio
 
 redis_repl()
 {
-sed -i "/set master_mid/ s/\"\"/\"${master_mid}\"/" /data/salt/srv/salt/redis/repl.sls
+sed -i "/set app_vip_mip_port/ s/\"\"/\"${app_vip_mip_port}\"/" /data/salt/srv/salt/redis/repl.sls
 salt "${mid}" state.sls redis.repl
-sed -i "/set master_mid/ s/\"${master_mid}\"/\"\"/" /data/salt/srv/salt/redis/repl.sls
+sed -i "/set app_vip_mip_port/ s/\"${app_vip_mip_port}\"/\"\"/" /data/salt/srv/salt/redis/repl.sls
 }
 
 redis_monitor()
@@ -23,35 +23,23 @@ salt "${mid}" state.sls redis.monitor
 
 redis_sentinel()
 {
-sed -i -e "/set master_mid/ s/\"\"/\"${master_mid}\"/" -e "/set master_vip/ s/\"\"/\"${master_vip}\"/" /data/salt/srv/salt/redis/sentinel.sls
+sed -i -e "/set app_vip_mip_port/ s/\"\"/\"${app_vip_mip_port}\"/" /data/salt/srv/salt/redis/sentinel.sls
 salt "sentinel-*" state.sls redis.sentinel
-sed -i -e "/set master_mid/ s/\"${master_mid}\"/\"\"/" -e "/set master_vip/ s/\"${master_vip}\"/\"\"/" /data/salt/srv/salt/redis/sentinel.sls
+sed -i -e "/set app_vip_mip_port/ s/\"${app_vip_mip_port}\"/\"\"/" /data/salt/srv/salt/redis/sentinel.sls
 }
 
-prompt()
-{
-echo -n "master_mid: "
-read master_mid
-echo -n "master_vip: "
-read master_vip
-echo -n "maxmemory of redis(e.g, 4gb, 512mb): "
-read redis_memory
-echo -n "new mids: "
-read mids
-echo -n "redis_version: "
-read redis_version
-}
 
 mids=$1
 redis_version=$2
 redis_memory=$3
-master_mid=$4
-master_vip=$5
+app_vip_mip_port=$4
+redis_memory_slave=$5
 
 for mid in ${mids}
 do
+echo ${mid} |grep redisslave >/dev/null && redis_memory=${redis_memory_slave}
 redis_install
-echo ${mid} |grep redisslave >/dev/null && redis_repl
+[ "${redis_version}" == "redis28" ] && echo ${mid} |grep redisslave >/dev/null && [ -n "${app_vip_mip_port}" ] && redis_repl
 redis_monitor
-[ -n "${master_vip}" ] && redis_sentinel
+[ -n "${app_vip_mip_port}" ] && redis_sentinel
 done

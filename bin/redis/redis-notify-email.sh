@@ -2,15 +2,13 @@
 #
 #
 
-dbadir=
-mymail=${dbadir}/script/sendEmail
-
-MAIL_FROM="monitor@cmug.com"
-MAIL_TO="zhanghai@cmug.org"
-MAIL_CC="dba@cmug.com"
+mymail=/data/soft/dbadmin/script/sendEmail
+MAIL_FROM="monitor@cmug.org"
+MAIL_TO="admin@cmug.org"
+MAIL_CC="lafeng@cmug.org"
 MAIL_SRV="smtp.exmail.qq.com:25"
 MAIL_USER="monitor@cmug.org"
-MAIL_PASS="xxxxx"
+MAIL_PASS="opencmug"
  
 if [ "$#" = "2" ]; then
     mail_subject="Redis Failover"

@@ -1,1 +1,1 @@
-grant all on *.* to admin@localhost identified by 'xxxxxxxx';
+set password for root@'localhost' = password('opencmug');

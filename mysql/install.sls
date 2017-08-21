@@ -1,10 +1,9 @@
-#{% set mysql_version = "Percona-Server-5.7.13-6-Linux.x86_64.ssl101" %}
-{% set mysql_version = "Percona-Server-5.6.30-rel76.3-Linux.x86_64.ssl101" %}
-{% set mycnf = "my.56.cnf" %}
+#{% set mysql_version = "Percona-Server-5.6.35-rel80.0-Linux.x86_64.ssl101" %}
+{% set mysql_version = "Percona-Server-5.7.18-14-Linux.x86_64.ssl101" %}
+{% set mycnf = "my.cnf" %}
 {% set instance = grains['id'].split('-')[3].split('_')|length %}
-{% set bp = (grains['mem_total'] / instance / 1000 * 0.64)|round|int %}
+{% set bp = (grains['mem_total'] / instance / 1000 * 0.70)|round|int %}
 {% set server_id = grains['server_id'] %}
-{% set softdir = "sofeware directory" %}
 
 useradd-mysql:
   user.present:
@@ -17,7 +16,7 @@ mysql-binary-pkg:
   file.managed:
     - name: /tmp/{{ mysql_version }}.tar.gz
     - source: salt://pkg/{{ mysql_version }}.tar.gz
-    - onlyif: test ! -e {{ softdir }}/mysql
+    - onlyif: test ! -e /data/soft/mysql
 
 grcat-pkg:
   file.managed:
@@ -33,7 +32,7 @@ grcat-conf:
 
 mkdir-basedir:
   file.directory:
-    - name: {{ softdir }}
+    - name: /data/soft
     - user: root
     - group: root
     - dir_mode: 755
@@ -43,16 +42,16 @@ mkdir-basedir:
       - group
       - mode
   cmd.run:
-    - name: tar -xzf {{ mysql_version }}.tar.gz -C {{ softdir }} && mv {{ softdir }}/{{ mysql_version }} {{ softdir }}/mysql
+    - name: tar -xzf {{ mysql_version }}.tar.gz -C /data/soft && mv /data/soft/{{ mysql_version }} /data/soft/mysql
     - cwd: /tmp
-    - onlyif: test ! -e {{ softdir }}/mysql
+    - onlyif: test ! -e /data/soft/mysql
     - require:
       - file: mysql-binary-pkg
       - file: mkdir-basedir
 
 chown-basedir:
   file.directory:
-    - name: {{ softdir }}/mysql
+    - name: /data/soft/mysql
     - user: root
     - group: root
     - dir_mode: 755
@@ -81,7 +80,7 @@ initDB{{ port }}:
     {% else %}
     - name: scripts/mysql_install_db --defaults-file=/data/mysql{{ port }}/my{{ port }}.cnf --user=mysql >/dev/null 2>&1
     {% endif %}
-    - cwd: {{ softdir }}/mysql
+    - cwd: /data/soft/mysql
     - onlyif: test ! -e /data/mysql{{ port }}/mysql
     - require:
       - file: mkdir-basedir
@@ -94,7 +93,7 @@ boot-startup{{ port }}:
     - name: /etc/rc.local
     - text: |
         # mysqld{{ port }} startup
-        cd {{ softdir }}/mysql;bin/mysqld_safe --defaults-file=/data/mysql{{ port }}/my{{ port }}.cnf --user=mysql &
+        cd /data/soft/mysql;bin/mysqld_safe --defaults-file=/data/mysql{{ port }}/my{{ port }}.cnf --user=mysql &
 
 my{{ port }}.cnf:
   file.managed:
@@ -104,7 +103,7 @@ my{{ port }}.cnf:
     - context:
       {% if 'mysqlslave' in grains['id'] %}
         read_only: 1
-        log_slave_updates: 0
+        log_slave_updates: 1
       {% endif %}
       {% if 'Percona' in mysql_version %}
         thread_handling: thread_handling                = pool-of-threads
@@ -114,7 +113,6 @@ my{{ port }}.cnf:
         log_timestamps: log_timestamps                 = SYSTEM
       {% endif %}
     - defaults:
-        basedir: {{ softdir }}/mysql
         port: {{ port }}
         innodb_buffer_pool_size: {{ bp }}G
         server_id: {{ sid }}
@@ -125,12 +123,13 @@ my{{ port }}.cnf:
         thread_pool_size: ''
         log_slave_updates: 1
         log_timestamps: ''
+        mysqld_safe_log_timestamps: ''
     - require:
       - file: mkdir-datadir{{ port }}
 
 startup-mysqld{{ port }}:
   cmd.run:
-    - name: echo deadline > /sys/block/vdb/queue/scheduler;echo 0 > /proc/sys/vm/swappiness;cd {{ softdir }}/mysql;bin/mysqld_safe --defaults-file=/data/mysql{{ port }}/my{{ port }}.cnf --user=mysql >/dev/null 2>&1 & 
+    - name: echo deadline > /sys/block/vdb/queue/scheduler;echo 1 > /proc/sys/vm/swappiness;cd /data/soft/mysql;bin/mysqld_safe --defaults-file=/data/mysql{{ port }}/my{{ port }}.cnf --user=mysql >/dev/null 2>&1 & 
     - unless: ps -ef |grep -v grep |grep -w {{ port }} > /dev/null
     - require:
       - file: my{{ port }}.cnf
@@ -155,8 +154,8 @@ mysql-env:
         MYSQL_UNIX_PORT=/data/mysql{{ grains['id'].split('-')[3].split('_')[0] }}/mysql.sock
         export MYSQL_UNIX_PORT
   cmd.run:
-    - name: sed -i -e '/^PATH=/ s#:{{ softdir }}/mysql/bin##g' -e '/^PATH=/ s#$#:{{ softdir }}/mysql/bin#' /root/.bash_profile; echo "[mysql]" > /etc/my.cnf; echo 'prompt="\D \U [\d]> "' >> /etc/my.cnf; echo 'pager=grcat ~/.grcat | less -RSFXin' >> /etc/my.cnf; echo 'tee=/data/tmp/mysqlop.log' >> /etc/my.cnf;echo "mysql  -    nofile 100001" >> /etc/security/limits.conf; echo "mysql  -    nproc  10240" >> /etc/security/limits.conf
-    - unless: grep '{{ softdir }}/mysql/bin' /root/.bash_profile
+    - name: sed -i -e '/^PATH=/ s#:/data/soft/mysql/bin##g' -e '/^PATH=/ s#$#:/data/soft/mysql/bin#' /root/.bash_profile; echo "[mysql]" > /etc/my.cnf; echo 'prompt="\D \U [\d]> "' >> /etc/my.cnf; echo 'pager=grcat ~/.grcat | less -RSFXin' >> /etc/my.cnf; echo 'tee=/data/tmp/mysqlop.log' >> /etc/my.cnf;echo "mysql  -    nofile 100001" >> /etc/security/limits.conf; echo "mysql  -    nproc  10240" >> /etc/security/limits.conf
+    - unless: grep '/data/soft/mysql/bin' /root/.bash_profile
 
 mkdir-tmpdir:
   file.directory:

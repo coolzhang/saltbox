@@ -1,4 +1,4 @@
-{% set zabbix_server = "zabbix server ip" %}
+{% set zabbix_server = "10.1.1.166" %}
 {% set zabbix_repo = "zabbix-release-2.2-1.el6.noarch.rpm" %}
 
 zabbix-yum-repo:

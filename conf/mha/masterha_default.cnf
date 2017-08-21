@@ -1,9 +1,13 @@
 [server default]
 user=admin
-password=xxxxxxxxxxxxxx
+password=opencmug
 ssh_user=root
-repl_user=repl_user
-repl_password=repl_password
+repl_user=repl
+repl_password=repl
 remote_workdir=/data/tmp
 ping_interval=30
 ping_type=select
+#secondary_check_script=masterha_secondary_check -s remote_host1 -s remote_host2
+#master_ip_failover_script=/script/masterha/master_ip_failover
+#shutdown_script=/script/masterha/power_manager
+#report_script=/data/salt/srv/salt/conf/mha/mysql-notify-sms.sh

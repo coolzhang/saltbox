@@ -24,6 +24,13 @@ mysql_backup()
 salt "${mid}" state.sls mysql.backup
 }
 
+mysql_slowlog()
+{
+if [ $(echo ${mid} | grep master) ];then
+salt "${mid}" state.sls mysql.slowlogdigest
+fi
+}
+
 prompt()
 {
 echo -n "new mids: "
@@ -45,4 +52,5 @@ sleep 10
 mysql_repl
 mysql_monitor
 mysql_backup
+mysql_slowlog
 done

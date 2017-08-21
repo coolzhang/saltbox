@@ -1,9 +1,7 @@
 #!/bin/bash
-#
-#
 
-salt_fileroots=
-sshkey_dir=${salt_fileroots}/conf/mha/sshkeys
+
+sshkey_dir=/data/salt/srv/salt/conf/mha/sshkeys
 
 if [ "$#" = "1" ];then
   if [ ! -e ${sshkey_dir}/$1 ];then

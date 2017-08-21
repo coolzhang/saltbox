@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+#  by Salvatore Sanfilippo
 #
 
 BIN=redis-benchmark
@@ -7,7 +7,7 @@ payload=32
 iterations=100000
 keyspace=100000
 port=7000
-logfile=/data/redis/benchmark2.log
+logfile=/tmp/redis_benchmark.log
 
 for clients in 1 5 10 20 30 40 50 60 70 80 90 100 200 300
 do

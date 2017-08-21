@@ -1,34 +1,32 @@
 #!/bin/bash
 #
-# restore_check.sh
+# restore_check.sh by zhanghai@cmug.org
 #
 
 source /root/.bash_profile
-softdir=
-bakbase=
-mysql=${softdir}/mysql/bin/mysql
-xtrabackup=${softdir}/dbadmin/script/innobackupex
-mysqladmin=${softdir}/mysql/bin/mysqladmin
-mymail=${softdir}/dbadmin/script/sendEmail
-restoreDir=
+mysql=/data/soft/mysql/bin/mysql
+xtrabackup=/data/soft/dbadmin/script/innobackupex
+mysqladmin=/data/soft/mysql/bin/mysqladmin
+mymail=/data/soft/dbadmin/script/sendEmail
+restoreDir=/data/restore
 restoreLog=${restoreDir}/log/restore.log
 portList=${restoreDir}/log/ports.txt
 rm -f ${restoreLog}
 
 if [ ! -e ${portList} ];then
-  ls -l ${bakbase} |awk -F'mysql' '/mysql/ {print $2}' > ${portList}
+  ls -l /data/backup |awk -F'mysql' '/mysql/ {print $2}' > ${portList}
 fi
 # delete old ports
 for i in $(cat ${portList})
 do
   i=$(echo $i |sed -e 's/#//')
-  ls -l ${bakbase} |awk -F'mysql' '/mysql/ {print $2}' |grep $i >/dev/null
+  ls -l /data/backup |awk -F'mysql' '/mysql/ {print $2}' |grep $i >/dev/null
   if [ "$?" != "0" ];then
     sed -i "/$i/d" ${portList}
   fi
 done
 # add new ports
-for i in $(ls -l ${bakbase} |awk -F'mysql' '/mysql/ {print $2}')
+for i in $(ls -l /data/backup |awk -F'mysql' '/mysql/ {print $2}')
 do
   grep $i ${portList} >/dev/null
   if [ "$?" != "0" ];then
@@ -37,7 +35,7 @@ do
 done
 # create new port list
 if [ "$(grep -cv '#' ${portList})" -eq "0" ];then
-  ls -l ${bakbase} |awk -F'mysql' '/mysql/ {print $2}' > ${portList}
+  ls -l /data/backup |awk -F'mysql' '/mysql/ {print $2}' > ${portList}
 fi
 # comment the port that will be checked
 port=$(grep -m1 -v '#' ${portList})
@@ -103,7 +101,7 @@ EOF
   chown -R mysql.mysql ${restoreDir}/${tool}/${dataDir}
   cd /data/soft/mysql
   bin/mysqld_safe --defaults-file=${restoreDir}/${tool}/${dataDir}/backup-my.cnf --user=mysql & > /dev/null 2>&1
-  sleep 60
+  sleep 120
   if [ -e ${restoreDir}/${tool}/${dataDir}/mysql.sock ];then
     echo -n "RecoveryStatus: Success" >> ${restoreLog}
     ## collect metadata
@@ -153,11 +151,11 @@ done
 
 # send mail
 MAIL_FROM="monitor@cmug.org"
-MAIL_TO="zhanghai@cmug.org"
-MAIL_CC="dba@cmug.org"
+MAIL_TO="lafeng@cmug.org xueao@cmug.org"
+MAIL_CC="lafeng@cmug.org"
 MAIL_SRV="smtp.exmail.qq.com:25"
 MAIL_USER="monitor@cmug.org"
-MAIL_PASS="xxxxxx"
+MAIL_PASS="opencmug"
 mail_subject="Restore Check Status"
 
 if [ -e ${restoreLog} ];then

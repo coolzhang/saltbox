@@ -1,15 +1,13 @@
 #!/bin/bash
 #
-# check_backup_stat.sh
+# check_backup_stat.sh by zhanghai@wepiao.com
 #
 
-dbaDir=
-baseDir=
-bakDir=
-logDir=${dbaDir}/log
+bakDir=/data/backup
+logDir=/data/soft/dbadmin/log
 bakDate=$(date +%Y%m%d)
-mysqlbinlog56=${baseDir}/bin/mysqlbinlog
-interval=7
+mysqlbinlog56=/data/soft/mysql/bin/mysqlbinlog
+interval=2
 
 fnBackupBinlog()
 {
@@ -37,13 +35,12 @@ nohup ${mysqlbinlog56} -u${master_user} -p${master_pass} -h${master_host} -P${ma
 
 fnBinlogSyncCheck()
 {
-ip_filter="10.1.1.1|10.0.0.1"
 binlog_sync_list=${logDir}/binsync.txt
 binlog_sync_err_list=${logDir}/binsync.err
 cat /dev/null > ${binlog_sync_err_list}
 ps -ef |grep mysqlbinlog |grep -v grep |awk '{print $(NF-1)}' |awk -F'/' '{print $4}' > ${binlog_sync_list}
 
-for i in $(ls ${bakDir} |grep mysql)
+for i in $(ls ${bakDir} |grep mysql |grep -vE "192.168|18001|18002")
 do
 grep $i ${binlog_sync_list} > /dev/null
 if [ "$?" != "0" ];then
@@ -51,8 +48,8 @@ echo $i >> ${binlog_sync_err_list}
 fi
 done
 
-if [ "$(grep -cvE "${ip_filter}" ${binlog_sync_err_list})" != "0" ];then
-${dbaDir}/script/sendEmail -f monitor@cmug.org -t zhanghai@cmug.org -cc dba@cmug.org -u "Binlog Sync Failure List" -m "$(cat ${binlog_sync_err_list})" -s smtp.exmail.qq.com -xu monitor@cmug.org -xp xxxxxxx
+if [ "$(grep -cvE "192.168|10.104.19.45|10.104.23.249|10.104.143.47|10.104.81.66" ${binlog_sync_err_list})" != "0" ];then
+/data/soft/dbadmin/script/sendEmail -f monitor@wepiao.com -t zhanghai@wepiao.com xueao@wepiao.com -cc shenbin@wepiao.com -u "Binlog Sync Failure List" -m "$(cat ${binlog_sync_err_list})" -s smtp.exmail.qq.com -xu monitor@wepiao.com -xp WY@123
 fi
 }
 
@@ -92,7 +89,7 @@ fi
 }
 
 # backup checkup
-ports=$(ls ${bakDir} |grep mysql)
+ports=$(ls ${bakDir} |grep mysql |grep -vE '18002|18001')
 for mysqlport in ${ports}
 do
   for tool in $(ls ${bakDir}/${mysqlport} |grep -E 'mysqldump|xtrabackup')
@@ -114,7 +111,7 @@ do
 done
 
 if [ -e ${logDir}/dailybackup_report_${bakDate}.log ];then
-  ${dbaDir}/script/sendEmail -f monitor@cmug.org -t zhanghai@cmug.org -cc dba@cmug.org -u "Backup Failure Report" -m "$(cat ${logDir}/dailybackup_report_${bakDate}.log)" -s smtp.exmail.qq.com -xu monitor@cmug.org -xp xxxxxxxxx
+  /data/soft/dbadmin/script/sendEmail -f monitor@wepiao.com -t zhanghai@wepiao.com xueao@wepiao.com -cc shenbin@wepiao.com -u "Backup Failure Report" -m "$(cat ${logDir}/dailybackup_report_${bakDate}.log)" -s smtp.exmail.qq.com -xu monitor@wepiao.com -xp WY@123 
 fi
 
 sleep 5

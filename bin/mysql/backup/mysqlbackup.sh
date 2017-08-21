@@ -3,7 +3,7 @@
 # mysqlbackup.sh
 #
 
-softdir=
+softdir=/data/soft
 # location of configuration files such as mycnf or baccnf
 cnfdir=${softdir}/dbadmin/conf
 # location of shell scripts
@@ -26,6 +26,6 @@ do
     sh ${shdir}/${type}.sh
   else
     dbhost=$(grep IPADDR /etc/sysconfig/network-scripts/ifcfg-eth* |awk -F'=' '{print $2}' |tr '\n' ' ')
-    ${soft_dir}/dbadmin/script/sendEmail -f monitor@cmug.org -t zhanghai@cmug.org -cc dba@cmug.org -u "Longtime Backup Report" -m "Please add info:[ ${dbhost} - ${type} - $(date +%Y%m%d) ] into backup_server:/data/backup/longbackup.list ." -s smtp.exmail.qq.com -o username=monitor@cmug.org -o password=xxxxxx
+    ${soft_dir}/dbadmin/script/sendEmail -f monitor@cmug.org -t lafeng@cmug.org -cc lafeng@cmug.org -u "Longtime Backup Report" -m "Please add info:[ ${dbhost} - ${type} - $(date +%Y%m%d) ] into 10.1.1.45:/data/backup/longbackup.list ." -s smtp.exmail.qq.com -o username=monitor@cmug.org -o password=opencmug
   fi
 done

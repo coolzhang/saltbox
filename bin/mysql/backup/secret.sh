@@ -1,6 +1,6 @@
 #!/bin/bash
 
-realpass="{{ admin_password }}"
+realpass="{{ backup_password }}"
 if [ $SECRET = "pass4db" ];then
 SECRET=$realpass
 fi
