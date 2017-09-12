@@ -13,7 +13,7 @@ fnBackupBinlog()
 {
 binDir=${bakDir}/${mysqlport}/binlog/${bakDate}
 binlog=${binDir}/${tool}_slave_info
-master_status=$(grep -m1 -i "change master" ${binlog} |sed -e 's/^-- //' -e 's/,/ /g' -e 's/;//' -e "s/'//g" | awk '{print $4" "$5" "$6" "$7" "$8" "$9}')
+master_status=$(grep -m1 -i "change master" ${binlog} |sed -e 's/^-- //' -e 's/,/ /g' -e 's/;//g' -e "s/'//g" | awk '{print $4" "$5" "$6" "$7" "$8" "$9}')
 master_user=$(echo ${master_status} |awk '{print $1}' |awk -F'=' '{print $2}')
 master_pass=$(echo ${master_status} |awk '{print $2}' |awk -F'=' '{print $2}')
 master_host=$(echo ${master_status} |awk '{print $3}' |awk -F'=' '{print $2}')
