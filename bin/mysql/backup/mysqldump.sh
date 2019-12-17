@@ -84,6 +84,25 @@ dbnames=$(${mysql} -u${USER} -p${SECRET} -S${SOCKET} -B -N -e "show databases" 2
 DBNAMES=$(echo ${dbnames})
 }
 
+check_query()
+{
+enabled_backup=0
+max_running=6
+sleep_seconds=60
+for i in {1..3}
+do
+threads_running=$(${mysql} -u${USER} -p${SECRET} -S${SOCKET} -B -N -e "select count(*) from information_schema.processlist where command not in ('Sleep', 'Binlog Dump', 'Connect', 'Binlog Dump GTID')")
+if [ ${threads_running} -gt ${max_running} ];then
+  echo "current thread running: ${threads_running}, sleep: ${sleep_seconds}s"
+  sleep ${sleep_seconds}
+elif [ ${threads_running} -lt ${max_running} ];then
+  enabled_backup=1
+  echo "start the backup"
+  break
+fi
+done
+}
+
 # start to backup
 command_check
 
@@ -91,6 +110,8 @@ cat ${cnfdir}/bakcnf |grep "mysqldump" |grep -v "Null" | while read TYPE WEEKLY 
 do
   dbdir=mysql${PORT}_${IP}
   mkdir_bakdir
+  check_query
+if [ ${enabled_backup} -eq 1 ];then
   echo ${WEEKLY} | grep -E "$(date +%a)|All" > /dev/null
   if [ $? -eq "0" ];then
     get_dbpass
@@ -120,4 +141,7 @@ do
       fi
     fi
   fi
+else
+  echo "stop the backup: current threads_running > ${max_running}!" >> ${localdir}/mysqldump_${bakdate}.log
+fi
 done
